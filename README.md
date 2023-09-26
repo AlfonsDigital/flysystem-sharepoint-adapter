@@ -30,11 +30,11 @@ You need to request a new clientId and clientSecret for a new application on Azu
     - Files.ReadWrite.All
     - Sites.ReadWrite.All
     - User.Read
-1.  Click on the `Grant admin consent for ...Company...`
-2.  Go in the menu to `Certificates & secrets`
-3.  Click on `new client secret`
-4.  Give it a description and expiry date and the value will be your `$clientSecret`
-5.  The last parameter will be the sharepoint 'slug', this is part of the url of the sharepoint site what you want to use and creation of sharepoint site is out of scope of this readme.  
+10.  Click on the `Grant admin consent for ...Company...`
+11. Go in the menu to `Certificates & secrets`
+12. Click on `new client secret`
+13. Give it a description and expiry date and the value will be your `$clientSecret`
+14. The last parameter will be the sharepoint 'slug', this is part of the url of the sharepoint site what you want to use and creation of sharepoint site is out of scope of this readme.  
   When you sharepoint url is like `https://{tenant}.sharepoint.com/sites/{site-slug}/Shared%20Documents/Forms/AllItems.aspx`  
   You need to set the `$sharepointSite` as `{site-slug}`    
     
@@ -42,19 +42,19 @@ You need to request a new clientId and clientSecret for a new application on Azu
      - Sharepoint site url: `https://GWSN.sharepoint.com/sites/gwsn-documents-store/Shared%20Documents/Forms/AllItems.aspx`
      - Sharepoint site variable:  `$sharepointSite = 'gwsn-documents-store'`
      - If you want to use the root of the site you can set the `$sharepointSite` as `GWSN.sharepoint.com`
-6. If you want to change the default folder from `Shared Documents` to something else you can set it following these instuctions:
-   - Go to `https://{tenant}.sharepoint.com/sites/{site-slug}/_api/v2.0/drives` or `https://{tenant}.sharepoint.com/_api/v2.0/drives` for the root of the site
-   - Search for the drive you want to use and copy the `id` of the drive
-   - Open `vendor/gwsn/flysystem-sharepoint-adapter/src/SharepointConnector.php` and change following line in the `__construct` method:
-   ```php
-   $driveId = $this->drive->requestDriveId($siteId);
-   ```
-   to:
-   ```php
-   $driveId = '{drive-id}';
-   ```
-   where `{drive-id}` is the id you copied from the api call.
-   
+15. If you want to change the default folder from `Shared Documents` to something else you can set it following these instuctions:
+       - Go to `https://{tenant}.sharepoint.com/sites/{site-slug}/_api/v2.0/drives` or `https://{tenant}.sharepoint.com/_api/v2.0/drives` for the root of the site
+       - Search for the drive you want to use and copy the `id` of the drive
+       - Open `vendor/gwsn/flysystem-sharepoint-adapter/src/SharepointConnector.php` and change following line in the `__construct` method:
+       ```php
+       $driveId = $this->drive->requestDriveId($siteId);
+       ```
+       to:
+       ```php
+       $driveId = '{drive-id}';
+       ```
+       where `{drive-id}` is the id you copied from the api call.
+       
 
 ``` php
 use GWSN\FlysystemSharepoint\FlysystemSharepointAdapter;
