@@ -1,4 +1,5 @@
 <?php
+
 namespace GWSN\FlysystemSharepoint;
 
 use League\Flysystem\Config;
@@ -6,6 +7,7 @@ use League\Flysystem\DirectoryAttributes;
 use League\Flysystem\FileAttributes;
 use League\Flysystem\FilesystemAdapter;
 use League\Flysystem\StorageAttributes;
+use League\Flysystem\UnableToRetrieveMetadata;
 
 class FlysystemSharepointAdapter implements FilesystemAdapter
 {
@@ -16,8 +18,7 @@ class FlysystemSharepointAdapter implements FilesystemAdapter
     public function __construct(
         SharepointConnector $connector,
         string $prefix = '/'
-    )
-    {
+    ) {
         $this->setConnector($connector);
         $this->setPrefix($prefix);
     }
@@ -183,7 +184,19 @@ class FlysystemSharepointAdapter implements FilesystemAdapter
      */
     public function mimeType(string $path): FileAttributes
     {
-        $this->connector->getFile()->checkFileMimeType($this->applyPrefix($path));
+        $path = $this->applyPrefix($path);
+
+        try {
+            $mimetype = $this->connector->getFile()->checkFileMimeType($path);
+        } catch (\Throwable $exception) {
+            throw UnableToRetrieveMetadata::mimeType($path, $exception->getMessage(), $exception);
+        }
+
+        if ($mimetype === null) {
+            throw UnableToRetrieveMetadata::mimeType($path, 'Unknown.');
+        }
+
+        return new FileAttributes($path, null, null, null, $mimetype);
     }
 
     /**
@@ -193,7 +206,8 @@ class FlysystemSharepointAdapter implements FilesystemAdapter
      */
     public function lastModified(string $path): FileAttributes
     {
-        $this->connector->getFile()->checkFileLastModified($this->applyPrefix($path));
+        $lastModified = $this->connector->getFile()->checkFileLastModified($this->applyPrefix($path));
+        return new FileAttributes($path, null, null, $lastModified);
     }
 
     /**
@@ -203,7 +217,19 @@ class FlysystemSharepointAdapter implements FilesystemAdapter
      */
     public function fileSize(string $path): FileAttributes
     {
-        $this->connector->getFile()->checkFileSize($this->applyPrefix($path));
+        $path = $this->applyPrefix($path);
+
+        try {
+            $fileSize = $this->connector->getFile()->checkFileSize($this->applyPrefix($path));
+        } catch (\Throwable $exception) {
+            throw UnableToRetrieveMetadata::fileSize($path, $exception->getMessage(), $exception);
+        }
+
+        if ($fileSize === null) {
+            throw UnableToRetrieveMetadata::fileSize($path, 'Unknown.');
+        }
+
+        return new FileAttributes($path, $fileSize);
     }
 
     /**
@@ -217,12 +243,12 @@ class FlysystemSharepointAdapter implements FilesystemAdapter
         $content = [];
         $result = $this->connector->getFolder()->requestFolderItems($this->applyPrefix($path));
 
-        if(count($result) > 0) {
-            foreach($result as $value) {
-                if(isset($value['folder'])) {
+        if (count($result) > 0) {
+            foreach ($result as $value) {
+                if (isset($value['folder'])) {
                     $content[] = new DirectoryAttributes($value['name'], 'notSupported', (new \DateTime($value['lastModifiedDateTime']))->getTimestamp(), $value);
                 }
-                if(isset($value['file'])) {
+                if (isset($value['file'])) {
                     $content[] = new FileAttributes($value['name'], $value['size'], 'notSupported', (new \DateTime($value['lastModifiedDateTime']))->getTimestamp(), $value['file']['mimeType'], $value);
                 }
             }
@@ -266,11 +292,9 @@ class FlysystemSharepointAdapter implements FilesystemAdapter
 
         $this->connector->getFile()->copyFile($this->applyPrefix($source), $this->applyPrefix($parentFolder), $fileName);
     }
-    
-    private function applyPrefix(string $path): string {
-        if($path === '' || $path === '/'){
-            return $this->getPrefix();
-        }
+
+    private function applyPrefix(string $path): string
+    {
         return sprintf('%s/%s', $this->getPrefix(), ltrim($path));
     }
 }

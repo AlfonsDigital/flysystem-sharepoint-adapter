@@ -1,4 +1,5 @@
 <?php
+
 namespace GWSN\FlysystemSharepoint;
 
 use GWSN\Microsoft\Authentication\AuthenticationService;
@@ -20,8 +21,7 @@ class SharepointConnector
         string $clientId,
         string $clientSecret,
         string $sharepointSite
-    )
-    {
+    ) {
         $authService = new AuthenticationService();
         $accessToken = $authService->getAccessToken($tenantId, $clientId, $clientSecret);
         $this->setAccessToken($accessToken);
@@ -111,5 +111,4 @@ class SharepointConnector
         $this->folder = $folder;
         return $this;
     }
-
 }

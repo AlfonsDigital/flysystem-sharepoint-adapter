@@ -26,11 +26,11 @@ You need to request a new clientId and clientSecret for a new application on Azu
 7. 'Directory (tenant) id', this will be your `$tenantId`
 8. Then we go in the menu to the `API permissions` to set the permissions that are required
 9. The click on `Add a permission` and add the following permissions:  
-  Microsoft Graph:
+  Microsoft Graph -> Application permissions:
     - Files.ReadWrite.All
     - Sites.ReadWrite.All
     - User.Read
-10. Click on the `Grant admin consent for ...Company...`
+10.  Click on the `Grant admin consent for ...Company...`
 11. Go in the menu to `Certificates & secrets`
 12. Click on `new client secret`
 13. Give it a description and expiry date and the value will be your `$clientSecret`
@@ -41,7 +41,20 @@ You need to request a new clientId and clientSecret for a new application on Azu
     Example:    
      - Sharepoint site url: `https://GWSN.sharepoint.com/sites/gwsn-documents-store/Shared%20Documents/Forms/AllItems.aspx`
      - Sharepoint site variable:  `$sharepointSite = 'gwsn-documents-store'`
-   
+     - If you want to use the root of the site you can set the `$sharepointSite` as `GWSN.sharepoint.com`
+15. If you want to change the default folder from `Shared Documents` to something else you can set it following these instuctions:
+       - Go to `https://{tenant}.sharepoint.com/sites/{site-slug}/_api/v2.0/drives` or `https://{tenant}.sharepoint.com/_api/v2.0/drives` for the root of the site
+       - Search for the drive you want to use and copy the `id` of the drive
+       - Open `vendor/gwsn/flysystem-sharepoint-adapter/src/SharepointConnector.php` and change following line in the `__construct` method:
+       ```php
+       $driveId = $this->drive->requestDriveId($siteId);
+       ```
+       to:
+       ```php
+       $driveId = '{drive-id}';
+       ```
+       where `{drive-id}` is the id you copied from the api call.
+       
 
 ``` php
 use GWSN\FlysystemSharepoint\FlysystemSharepointAdapter;
