@@ -7,6 +7,7 @@ use League\Flysystem\DirectoryAttributes;
 use League\Flysystem\FileAttributes;
 use League\Flysystem\FilesystemAdapter;
 use League\Flysystem\StorageAttributes;
+use League\Flysystem\UnableToRetrieveMetadata;
 
 class FlysystemSharepointAdapter implements FilesystemAdapter
 {
@@ -183,8 +184,19 @@ class FlysystemSharepointAdapter implements FilesystemAdapter
      */
     public function mimeType(string $path): FileAttributes
     {
-        $mimeType = $this->connector->getFile()->checkFileMimeType($this->applyPrefix($path));
-        return new FileAttributes($path, null, null, null, $mimeType);
+        $path = $this->applyPrefix($path);
+
+        try {
+            $mimetype = $this->connector->getFile()->checkFileMimeType($path);
+        } catch (\Throwable $exception) {
+            throw UnableToRetrieveMetadata::mimeType($path, $exception->getMessage(), $exception);
+        }
+
+        if ($mimetype === null) {
+            throw UnableToRetrieveMetadata::mimeType($path, 'Unknown.');
+        }
+
+        return new FileAttributes($path, null, null, null, $mimetype);
     }
 
     /**
@@ -205,7 +217,18 @@ class FlysystemSharepointAdapter implements FilesystemAdapter
      */
     public function fileSize(string $path): FileAttributes
     {
-        $fileSize = $this->connector->getFile()->checkFileSize($this->applyPrefix($path));
+        $path = $this->applyPrefix($path);
+
+        try {
+            $fileSize = $this->connector->getFile()->checkFileSize($this->applyPrefix($path));
+        } catch (\Throwable $exception) {
+            throw UnableToRetrieveMetadata::fileSize($path, $exception->getMessage(), $exception);
+        }
+
+        if ($fileSize === null) {
+            throw UnableToRetrieveMetadata::fileSize($path, 'Unknown.');
+        }
+
         return new FileAttributes($path, $fileSize);
     }
 
